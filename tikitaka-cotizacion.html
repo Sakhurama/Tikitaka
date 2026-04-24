@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tikitaka Challenge — Cotización MVP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0f11;
+      --surface: #16181c;
+      --surface-2: #1e2026;
+      --border: rgba(255,255,255,0.08);
+      --border-hover: rgba(255,255,255,0.15);
+      --text: #e8e6e0;
+      --muted: #b6b6b5;
+      --hint: #4a4844;
+      --p1: #c8bfff; --p1-bg: rgba(200,191,255,0.08); --p1-dot: #9d8fff;
+      --p2: #93c5fd; --p2-bg: rgba(147,197,253,0.08); --p2-dot: #60a5fa;
+      --p3: #fbbf24; --p3-bg: rgba(251,191,36,0.08);  --p3-dot: #f59e0b;
+      --p4: #6ee7b7; --p4-bg: rgba(110,231,183,0.08); --p4-dot: #34d399;
+      --p5: #fca5a5; --p5-bg: rgba(252,165,165,0.08); --p5-dot: #f87171;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(157,143,255,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(52,211,153,0.04) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 5rem;
+    }
+
+    /* HEADER */
+    .site-header { margin-bottom: 2rem; }
+
+    .project-tag {
+      display: inline-block;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 10px;
+      margin-bottom: 1.25rem;
+    }
+
+    .site-header h1 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 300;
+      line-height: 1.15;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .site-header h1 em { font-style: italic; color: var(--p1); }
+
+    .site-header .sub {
+      margin-top: 0.75rem;
+      font-size: 12px;
+      color: var(--muted);
+      max-width: 520px;
+    }
+
+    /* TAB NAV */
+    .tab-nav {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 2.5rem;
+      width: fit-content;
+    }
+
+    .tab-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      padding: 7px 18px;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      background: transparent;
+      color: var(--muted);
+      transition: background 0.18s, color 0.18s;
+    }
+
+    .tab-btn:hover { color: var(--text); }
+
+    .tab-btn.active {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border-hover);
+    }
+
+    /* VIEWS */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* METRICS */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 2.5rem;
+    }
+
+    .metric {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+    }
+
+    .metric-label { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .metric-value { font-size: 22px; font-weight: 500; color: var(--text); letter-spacing: -0.03em; }
+    .metric-sub { font-size: 10px; color: var(--hint); margin-top: 2px; }
+
+    /* TECHNICAL PHASES */
+    .phases { display: flex; flex-direction: column; gap: 10px; }
+
+    .phase-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .phase-card:hover { border-color: var(--border-hover); }
+
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+
+    .phase-header:hover { background: rgba(255,255,255,0.02); }
+
+    .phase-num {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 500;
+      flex-shrink: 0;
+      border: 1px solid currentColor;
+    }
+
+    .phase-info { flex: 1; min-width: 0; }
+
+    .phase-title {
+      font-size: 13px; font-weight: 500; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .phase-sub {
+      font-size: 11px; color: var(--muted); margin-top: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .phase-right { text-align: right; flex-shrink: 0; }
+    .phase-hours { font-size: 14px; font-weight: 500; color: var(--text); letter-spacing: -0.02em; }
+    .phase-pct { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    .chevron {
+      color: var(--hint); font-size: 14px;
+      transition: transform 0.25s ease;
+      flex-shrink: 0; margin-left: 4px;
+    }
+
+    .chevron.open { transform: rotate(180deg); }
+
+    .phase-body { max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1); }
+    .phase-body.open { max-height: 2000px; }
+
+    .phase-body-inner { padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+
+    .phase-progress { height: 2px; background: rgba(255,255,255,0.06); border-radius: 1px; margin: 1rem 0; overflow: hidden; }
+    .phase-progress-fill { height: 100%; border-radius: 1px; }
+
+    .task-groups { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .task-group {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+    }
+
+    .task-group-label { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+
+    .task-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 7px; font-size: 11.5px; color: rgba(232,230,224,0.8); line-height: 1.55; }
+    .task-item:last-child { margin-bottom: 0; }
+    .task-dot { width: 4px; height: 4px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+
+    .totals-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .totals-label { font-size: 11px; color: var(--muted); }
+    .totals-value { font-size: 15px; font-weight: 500; color: var(--text); letter-spacing: -0.02em; }
+
+    .note {
+      margin-top: 1.75rem;
+      padding: 1rem 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 11px; color: var(--muted); line-height: 1.7;
+    }
+
+    .note strong { color: rgba(232,230,224,0.6); font-weight: 500; }
+
+    .site-footer { margin-top: 3rem; font-size: 10px; color: var(--hint); text-align: center; letter-spacing: 0.05em; }
+
+    /* ════════ CLIENT VIEW ════════ */
+
+    .section-label {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    /* intro */
+    .client-intro { margin-bottom: 2.5rem; }
+    .client-intro-accent { font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--p1); margin-bottom: 0.75rem; }
+    .client-intro p { font-size: 14px; color: rgba(232,230,224,0.75); max-width: 620px; line-height: 1.9; }
+
+    /* deliverables */
+    .deliverables-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-bottom: 2.5rem;
+    }
+
+    .deliverable-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      transition: border-color 0.2s;
+    }
+
+    .deliverable-card:hover { border-color: var(--border-hover); }
+
+    .deliverable-icon { font-size: 20px; margin-bottom: 0.75rem; display: block; line-height: 1; }
+    .deliverable-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; line-height: 1.4; }
+    .deliverable-desc { font-size: 11.5px; color: var(--muted); line-height: 1.65; }
+
+    /* how it works */
+    .how-section { margin-bottom: 2.5rem; }
+
+    .how-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 10px;
+    }
+
+    .how-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem 1.25rem;
+    }
+
+    .how-step-num { font-size: 10px; letter-spacing: 0.08em; color: #9d8fff; margin-bottom: 0.5rem; }
+    .how-step-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 5px; line-height: 1.3; }
+    .how-step-desc { font-size: 11.5px; color: var(--muted); line-height: 1.65; }
+
+    /* timeline */
+    .timeline { display: flex; flex-direction: column; margin-bottom: 2.5rem; }
+
+    .timeline-item { display: flex; gap: 16px; }
+
+    .timeline-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 28px; }
+
+    .tl-dot {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 500;
+      border: 1px solid;
+      flex-shrink: 0;
+      position: relative; z-index: 1;
+    }
+
+    .tl-line { width: 1px; flex: 1; background: var(--border); min-height: 20px; }
+    .timeline-item:last-child .tl-line { display: none; }
+
+    .timeline-content { padding-bottom: 1.5rem; flex: 1; }
+    .timeline-item:last-child .timeline-content { padding-bottom: 0; }
+
+    .tl-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; padding-top: 3px; flex-wrap: wrap; }
+    .tl-title { font-size: 13px; font-weight: 500; color: var(--text); }
+
+    .tl-badge {
+      font-size: 10px;
+      padding: 2px 10px;
+      border-radius: 20px;
+      flex-shrink: 0;
+    }
+
+    .tl-desc { font-size: 12px; color: var(--muted); line-height: 1.75; max-width: 540px; margin-bottom: 8px; }
+
+    .tl-outcome {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 10.5px; color: rgba(232,230,224,0.45);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 3px 8px;
+    }
+
+    .tl-outcome-dot { width: 5px; height: 5px; border-radius: 50%; }
+
+    /* investment */
+    .investment-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .investment-row {
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .investment-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .investment-row:first-child { padding-top: 0; }
+
+    .inv-label { font-size: 12px; color: var(--muted); }
+    .inv-value { font-size: 12px; font-weight: 500; color: var(--text); text-align: right; }
+    .inv-value.accent { color: var(--p1); }
+
+    /* cta */
+    .client-cta {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.4rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+    }
+
+    .cta-label { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+    .cta-main { font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 300; color: var(--text); letter-spacing: -0.01em; }
+
+    .cta-link {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px; color: var(--p1);
+      background: var(--p1-bg);
+      border: 1px solid rgba(200,191,255,0.2);
+      border-radius: 7px; padding: 8px 18px;
+      cursor: pointer; transition: background 0.15s;
+      white-space: nowrap; text-decoration: none;
+    }
+
+    .cta-link:hover { background: rgba(200,191,255,0.15); }
+
+    /* RESPONSIVE */
+    @media (max-width: 580px) {
+      .task-groups { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .wrapper { padding: 2rem 1rem 4rem; }
+      .phase-sub { display: none; }
+      .phase-title { font-size: 12px; }
+      .tab-btn { padding: 6px 12px; font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header class="site-header">
+    <div class="project-tag">Cotización MVP · Daniel Romero</div>
+    <h1>Tikitaka<br /><em>Challenge</em> — MVP</h1>
+    <p class="sub">Plataforma web de entrenamiento gamificado para niños · Propuesta de desarrollo por fases</p>
+  </header>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('client')">On boarding</button>
+    <button class="tab-btn" onclick="switchTab('technical')">Detalles Tecnicos</button>
+  </div>
+
+  <!-- ════════ VISTA CLIENTE ════════ -->
+  <div class="view active" id="view-client">
+
+    <div class="client-intro">
+      <div class="client-intro-accent">¿Qué es Tikitaka Challenge?</div>
+      <p>Una aplicación web donde los niños completan retos físicos asignados por un tutor, graban un video como prueba, reciben retroalimentación y acumulan puntos de experiencia para subir de nivel. Como un videojuego, pero con ejercicio real.</p>
+    </div>
+
+    <div class="section-label">¿Qué incluye el proyecto?</div>
+    <div class="deliverables-grid">
+      <div class="deliverable-card">
+        <span class="deliverable-icon">🎨</span>
+        <div class="deliverable-title">Diseño a medida</div>
+        <div class="deliverable-desc">Interfaz visual diseñada desde cero, pensada para niños y tutores. Amigable, moderna y adaptada a móvil.</div>
+      </div>
+      <div class="deliverable-card">
+        <span class="deliverable-icon">🔐</span>
+        <div class="deliverable-title">Dos roles separados</div>
+        <div class="deliverable-desc">El tutor tiene su propio panel para crear retos y revisar videos. El estudiante tiene el suyo para explorar, entregar y ver su progreso.</div>
+      </div>
+      <div class="deliverable-card">
+        <span class="deliverable-icon">🎥</span>
+        <div class="deliverable-title">Entrega de videos</div>
+        <div class="deliverable-desc">Los niños suben su video directamente desde la app. El tutor lo ve, lo aprueba o pide correcciones con un comentario.</div>
+      </div>
+      <div class="deliverable-card">
+        <span class="deliverable-icon">⭐</span>
+        <div class="deliverable-title">Sistema de niveles y XP</div>
+        <div class="deliverable-desc">Cada reto aprobado suma puntos de experiencia. El niño ve su barra de progreso y cuánto le falta para subir de nivel.</div>
+      </div>
+      <div class="deliverable-card">
+        <span class="deliverable-icon">📱</span>
+        <div class="deliverable-title">Funciona en cualquier dispositivo</div>
+        <div class="deliverable-desc">La plataforma se adapta automáticamente a teléfonos, tablets y computadores.</div>
+      </div>
+      <div class="deliverable-card">
+        <span class="deliverable-icon">🚀</span>
+        <div class="deliverable-title">Lista para publicar</div>
+        <div class="deliverable-desc">El proyecto se entrega desplegado en internet, con dominio configurado y lista para que los usuarios empiecen a usarla desde el día uno.</div>
+      </div>
+    </div>
+
+    <div class="how-section">
+      <div class="section-label">¿Cómo funciona la Aplicación?</div>
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="how-step-num">Paso 01</div>
+          <div class="how-step-title">El tutor crea un reto</div>
+          <div class="how-step-desc">Define el título, la descripción del ejercicio y cuántos puntos vale si el niño lo completa.</div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">Paso 02</div>
+          <div class="how-step-title">El niño acepta y graba</div>
+          <div class="how-step-desc">El estudiante ve los retos disponibles, acepta uno y sube un video demostrando que lo completó.</div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">Paso 03</div>
+          <div class="how-step-title">El tutor revisa</div>
+          <div class="how-step-desc">Ve el video en su panel y con un clic aprueba la entrega o pide que el niño lo intente de nuevo, dejando un comentario.</div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">Paso 04</div>
+          <div class="how-step-title">El niño sube de nivel</div>
+          <div class="how-step-desc">Al ser aprobado, los puntos se suman automáticamente. La barra de XP avanza y el niño siente que progresa de verdad.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-bottom:1rem;">Las 5 etapas del proyecto</div>
+    <div class="timeline" id="client-timeline"></div>
+
+    <div class="section-label">Resumen de la inversión</div>
+    <div class="investment-block">
+      <div class="investment-row">
+        <span class="inv-label">Alcance del proyecto</span>
+        <span class="inv-value">MVP completo · 5 fases</span>
+      </div>
+      <div class="investment-row">
+        <span class="inv-label">Tiempo estimado de trabajo</span>
+        <span class="inv-value">110 – 140 horas</span>
+      </div>
+      <div class="investment-row">
+        <span class="inv-label">Modelo de entrega</span>
+        <span class="inv-value">Por fases · revisión al final de cada una</span>
+      </div>
+      <div class="investment-row">
+        <span class="inv-label">Tecnología</span>
+        <span class="inv-value">React · Next Js · SupaBase</span>
+      </div>
+      <div class="investment-row">
+        <span class="inv-label">Infraestructura incluida</span>
+        <span class="inv-value">Hosting y base de datos</span>
+      </div>
+      <div class="investment-row">
+        <span class="inv-label">Entregable final</span>
+        <span class="inv-value accent">Plataforma publicada + código fuente</span>
+      </div>
+    </div>
+
+    <div class="client-cta">
+      <div>
+        <div class="cta-label">¿Quieres ver el detalle completo?</div>
+        <div class="cta-main">Consulta el desglose técnico por fase</div>
+      </div>
+      <a class="cta-link" onclick="switchTab('technical'); window.scrollTo({top:0,behavior:'smooth'})">
+        Ver detalle técnico →
+      </a>
+    </div>
+
+  </div>
+
+  <!-- ════════ VISTA TÉCNICA ════════ -->
+  <div class="view" id="view-technical">
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-label">Total estimado</div>
+        <div class="metric-value">125 h</div>
+        <div class="metric-sub">Rango: 110–140 h</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Fases</div>
+        <div class="metric-value">5</div>
+        <div class="metric-sub">Secuenciales</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Tareas detalladas</div>
+        <div class="metric-value">38+</div>
+        <div class="metric-sub">Frontend, backend & lógica</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Modelo</div>
+        <div class="metric-value">Fases</div>
+        <div class="metric-sub">Por entregables</div>
+      </div>
+    </div>
+
+    <div class="phases" id="phases"></div>
+
+    <div class="note">
+      <strong>Notas:</strong> Las horas incluyen pruebas básicas por módulo, revisiones propias y tiempo de comunicación con el cliente (reunión de validación por fase). La <strong>Fase 3</strong> contiene la transacción atómica en PostgreSQL (RPC de Supabase) que es el punto de mayor riesgo técnico del MVP.
+    </div>
+
+  </div>
+
+  <footer class="site-footer">
+    Tikitaka Challenge · Propuesta MVP <br>
+    por <a href="http://sakhurama.netlify.app/" target="_blank" class="site-footer" >Daniel Romero · Desarrollador Web</a>
+  </footer>
+
+</div>
+
+<script>
+  function switchTab(tab) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('view-' + tab).classList.add('active');
+    document.querySelectorAll('.tab-btn')[tab === 'client' ? 0 : 1].classList.add('active');
+  }
+
+  /* CLIENT TIMELINE */
+  const clientPhases = [
+    {
+      color:'var(--p1)', dotColor:'var(--p1-dot)', bg:'var(--p1-bg)', num:'01',
+      title:'Diseño y planificación',
+      badge:'22–28 h',
+      desc:'Antes de escribir código, diseñamos cómo se verá y cómo funcionará la aplicación. Crearemos los prototipos visuales para que puedas ver la plataforma completa y dar tu aprobación antes de que empiece el desarrollo.',
+      outcome:'Prototipo visual en Figma',
+    },
+    {
+      color:'var(--p2)', dotColor:'var(--p2-dot)', bg:'var(--p2-bg)', num:'02',
+      title:'Registro, inicio de sesión y seguridad',
+      badge:'18–22 h',
+      desc:'Configuramos los cimientos: registro de usuarios, inicio de sesión y la separación estricta entre tutores y estudiantes. Cada persona verá solo lo que le corresponde, con acceso completamente seguro.',
+      outcome:'Acceso funcionando para ambos roles',
+    },
+    {
+      color:'var(--p3)', dotColor:'var(--p3-dot)', bg:'var(--p3-bg)', num:'03',
+      title:'Panel del tutor',
+      badge:'28–34 h',
+      desc:'El tutor podrá crear retos, ver los videos enviados y decidir si aprueba o pide correcciones. Al aprobar, los puntos se acreditan automáticamente.',
+      outcome:'Panel del tutor funcionando al 100%',
+    },
+    {
+      color:'var(--p4)', dotColor:'var(--p4-dot)', bg:'var(--p4-bg)', num:'04',
+      title:'Panel del estudiante y gamificación',
+      badge:'28–34 h',
+      desc:'El estudiante podrá explorar retos, subir su video y ver en tiempo real si fue aprobado o necesita mejoras. La barra de XP, el nivel actual y las animaciones de progreso hacen que la experiencia sea motivante.',
+      outcome:'Plataforma completa y jugable',
+    },
+    {
+      color:'var(--p5)', dotColor:'var(--p5-dot)', bg:'var(--p5-bg)', num:'05',
+      title:'Pruebas y publicación',
+      badge:'14–22 h',
+      desc:'Probamos todo de punta a punta para garantizar que funcione perfecto en móviles, tablets y computadores. Configuramos el hosting y publicamos la plataforma en internet con el dominio configurado.',
+      outcome:'Plataforma publicada y lista para usuarios',
+    },
+  ];
+
+  const timeline = document.getElementById('client-timeline');
+  clientPhases.forEach(p => {
+    const item = document.createElement('div');
+    item.className = 'timeline-item';
+    item.innerHTML = `
+      <div class="timeline-left">
+        <div class="tl-dot" style="color:${p.color};border-color:${p.color};background:${p.bg};">${p.num}</div>
+        <div class="tl-line"></div>
+      </div>
+      <div class="timeline-content">
+        <div class="tl-header">
+          <div class="tl-title">${p.title}</div>
+          <div class="tl-badge" style="background:${p.bg};color:${p.color};border:1px solid ${p.color}33;">${p.badge}</div>
+        </div>
+        <div class="tl-desc">${p.desc}</div>
+        <div class="tl-outcome">
+          <div class="tl-outcome-dot" style="background:${p.dotColor};"></div>
+          Entregable: ${p.outcome}
+        </div>
+      </div>
+    `;
+    timeline.appendChild(item);
+  });
+
+  /* TECHNICAL PHASES */
+  const phases = [
+    {
+      color:'var(--p1)',dotColor:'var(--p1-dot)',bg:'var(--p1-bg)',
+      title:'Diseño UI/UX y Arquitectura de Datos',sub:'Figma · Supabase schema · RLS policies',
+      min:22,max:28,mid:25,
+      groups:[
+        {label:'Diseño UI/UX (Figma)',tasks:[
+          'Definición de flujos de usuario: mapa de navegación para roles Tutor y Estudiante',
+          'Wireframes de baja fidelidad para todas las vistas clave (login, dashboards, revisión, reto)',
+          'Sistema de diseño: paleta de colores, tipografía, componentes reutilizables (botones, badges de XP, tarjetas de reto)',
+          'Prototipo de alta fidelidad en Figma: pantallas de gamificación (barra de XP, nivel, insignias)',
+          'Validación del prototipo con el cliente y ajustes finales antes de maquetar',
+        ]},
+        {label:'Arquitectura & Base de Datos',tasks:[
+          'Diseño del esquema relacional: tablas users, roles, challenges, submissions, xp_log, levels',
+          'Definición de enums y constraints: status (pending / approved / rejected), role (tutor / student)',
+          'Configuración de Row Level Security (RLS): políticas por rol para cada tabla',
+          'Diseño del bucket de Storage: estructura de carpetas por student_id/submission_id',
+          'Políticas de Storage: solo propietario escribe; tutores leen con URL firmada',
+          'Documentación del esquema y setup del repositorio base (Next.js + Supabase boilerplate)',
+        ]},
+      ],
+    },
+    {
+      color:'var(--p2)',dotColor:'var(--p2-dot)',bg:'var(--p2-bg)',
+      title:'Autenticación y Cimientos del Stack',sub:'Setup · Auth · Middleware de rutas protegidas',
+      min:18,max:22,mid:20,
+      groups:[
+        {label:'Setup e Infraestructura',tasks:[
+          'Inicialización del proyecto Next.js (App Router) con Tailwind CSS y Supabase SDK',
+          'Configuración de variables de entorno y cliente Supabase (server/client components)',
+          'Setup del proyecto en Vercel con integración automática de Supabase',
+          'Estructura de carpetas y convenciones de código (components, lib, hooks, types)',
+        ]},
+        {label:'Autenticación & Protección de rutas',tasks:[
+          'Implementación de registro con email/contraseña usando Supabase Auth',
+          'Asignación del rol (tutor/estudiante) en tabla users al momento del registro',
+          'Flujo de login con manejo de errores y redirección según rol',
+          'Middleware de Next.js: verificación de sesión activa y redirección a login',
+          'Guard de roles: bloqueo de rutas del tutor si el usuario es estudiante y viceversa',
+          'Componente de layout con navbar dinámica según rol y estado de sesión',
+          'Flujo de logout con limpieza de sesión y redirección',
+        ]},
+      ],
+    },
+    {
+      color:'var(--p3)',dotColor:'var(--p3-dot)',bg:'var(--p3-bg)',
+      title:'Módulo del Tutor y Lógica de Revisión',sub:'CRUD de retos · Bandeja · Evaluación transaccional',
+      min:28,max:34,mid:31,
+      groups:[
+        {label:'Gestión de Retos (CRUD)',tasks:[
+          'Dashboard del tutor: listado de retos con estado activo/inactivo y paginación',
+          'Formulario de creación de reto: título, descripción enriquecida, puntos de XP',
+          'Lógica de edición con validación de campos y actualización en Supabase',
+          'Eliminación con modal de confirmación (bloqueada si hay entregas activas)',
+        ]},
+        {label:'Bandeja y Evaluación',tasks:[
+          'Bandeja de entregas pendientes: listado filtrado por status=pending con datos del estudiante',
+          'Vista de detalle: reproductor de video con URL firmada de Supabase Storage',
+          'Generación de signed URLs para reproducción segura de videos privados',
+          'Botón Aprobar: función RPC en PostgreSQL que actualiza submission, inserta en xp_log y recalcula nivel atómicamente',
+          'Botón Rechazar: actualiza status a rejected + persiste comentario de feedback',
+          'Validación: el tutor no puede re-evaluar entregas ya resueltas',
+          'Historial de entregas evaluadas con filtros por estado y búsqueda por nombre',
+        ]},
+      ],
+    },
+    {
+      color:'var(--p4)',dotColor:'var(--p4-dot)',bg:'var(--p4-bg)',
+      title:'Módulo del Estudiante, Videos y Gamificación',sub:'Dashboard · Subida de video · Motor de XP y niveles',
+      min:28,max:34,mid:31,
+      groups:[
+        {label:'Dashboard y Flujo de Entregas',tasks:[
+          'Dashboard del estudiante: explorador de retos activos con tarjetas (título, XP, descripción)',
+          'Vista de detalle del reto con botón Aceptar reto',
+          'Componente de upload: drag-and-drop con validación de tipo (mp4/mov/webm) y peso máximo',
+          'Upload a Supabase Storage con barra de progreso en tiempo real',
+          'Creación del registro submission en DB con status=pending post-upload',
+          'Vista Mis entregas: listado con badges de estado (Pendiente / Aprobada / Por corregir)',
+          'Vista de entrega rechazada: muestra feedback del tutor con CTA para re-entregar',
+        ]},
+        {label:'Motor de Gamificación',tasks:[
+          'Cálculo de XP total desde xp_log agrupado por estudiante',
+          'Función de nivel: tabla de umbrales de XP configurable en DB',
+          'Componente de barra de XP animada con progreso hacia el siguiente nivel',
+          'Indicador de nivel actual con nombre/número y avatar de nivel',
+          'Notificación visual al subir de nivel (animación de celebración)',
+          'Widget resumen: nivel actual, XP total, retos completados, retos pendientes',
+        ]},
+      ],
+    },
+    {
+      color:'var(--p5)',dotColor:'var(--p5-dot)',bg:'var(--p5-bg)',
+      title:'QA, Optimización y Lanzamiento',sub:'Responsive · Performance de video · Producción',
+      min:14,max:22,mid:18,
+      groups:[
+        {label:'QA y Pruebas',tasks:[
+          'Testing E2E de flujos críticos: registro → reto → upload → evaluación → XP',
+          'Pruebas de RLS: verificar aislamiento de datos entre estudiantes',
+          'Pruebas de la transacción atómica: rollback si falla escritura en xp_log',
+          'Edge cases: video fuera de límite, formatos inválidos, sesión expirada',
+        ]},
+        {label:'Optimización y Producción',tasks:[
+          'Responsive mobile-first en todas las vistas de ambos roles',
+          'Validación de peso de video en cliente y configuración de cuota en bucket de Storage',
+          'Lazy loading de componentes pesados y optimización con next/image',
+          'Configuración de dominio personalizado y variables de producción en Vercel',
+          'CORS y políticas de seguridad en Supabase apuntando al dominio de producción',
+          'Smoke testing en producción + documentación de entrega (README y guía básica)',
+        ]},
+      ],
+    },
+  ];
+
+  const totalMin = phases.reduce((a,p) => a+p.min, 0);
+  const totalMax = phases.reduce((a,p) => a+p.max, 0);
+  const totalMid = phases.reduce((a,p) => a+p.mid, 0);
+
+  const container = document.getElementById('phases');
+
+  phases.forEach((phase, i) => {
+    const pct = Math.round((phase.mid / totalMid) * 100);
+    const card = document.createElement('div');
+    card.className = 'phase-card';
+
+    const tasksHTML = phase.groups.map(g => `
+      <div class="task-group">
+        <div class="task-group-label">${g.label}</div>
+        ${g.tasks.map(t => `
+          <div class="task-item">
+            <div class="task-dot" style="background:${phase.dotColor}"></div>
+            <span>${t}</span>
+          </div>
+        `).join('')}
+      </div>
+    `).join('');
+
+    card.innerHTML = `
+      <div class="phase-header" onclick="toggle(${i})" role="button">
+        <div class="phase-num" style="color:${phase.color};border-color:${phase.color};background:${phase.bg};">${i+1}</div>
+        <div class="phase-info">
+          <div class="phase-title">${phase.title}</div>
+          <div class="phase-sub">${phase.sub}</div>
+        </div>
+        <div class="phase-right">
+          <div class="phase-hours">${phase.min}–${phase.max} h</div>
+          <div class="phase-pct">${pct}% del total</div>
+        </div>
+        <div class="chevron" id="chev-${i}">▾</div>
+      </div>
+      <div class="phase-body" id="body-${i}">
+        <div class="phase-body-inner">
+          <div class="phase-progress">
+            <div class="phase-progress-fill" style="width:${pct}%;background:${phase.dotColor};"></div>
+          </div>
+          <div class="task-groups">${tasksHTML}</div>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+
+  const totals = document.createElement('div');
+  totals.className = 'totals-bar';
+  totals.innerHTML = `
+    <span class="totals-label">Total del proyecto</span>
+    <span class="totals-value">${totalMin}–${totalMax} h &nbsp;·&nbsp; ~${totalMid} h promedio</span>
+  `;
+  container.appendChild(totals);
+
+  function toggle(i) {
+    const body = document.getElementById('body-' + i);
+    const chev = document.getElementById('chev-' + i);
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    chev.classList.toggle('open', !isOpen);
+  }
+
+  toggle(0);
+</script>
+</body>
+</html>
